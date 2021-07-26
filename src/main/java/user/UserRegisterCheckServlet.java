@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet implementation class UserRegisterCheckServlet
  */
-@WebServlet("/UserRegisterCheckServlet")
+@WebServlet("/userRegisterCheckServlet")
 public class UserRegisterCheckServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -19,7 +19,6 @@ public class UserRegisterCheckServlet extends HttpServlet {
 		response.setContentType("text/html; charset=UTF-8");
 		String userID = request.getParameter("userID");
 		int result = new UserDAO().registerCheck(userID);
-		System.out.println("UserRegisterCheckServlet - result : " + result);
 		response.getWriter().write(result + ""); // "" 붙여서 String 변환 -> jsp 값 체크 가능
 	}
 

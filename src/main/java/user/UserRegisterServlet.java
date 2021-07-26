@@ -7,10 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- * Servlet implementation class UserRegister
- */
-@WebServlet("/UserRegister")
+@WebServlet("/userRegister")
 public class UserRegisterServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -26,14 +23,6 @@ public class UserRegisterServlet extends HttpServlet {
 		String userGender = request.getParameter("userGender");
 		String userEmail = request.getParameter("userEmail");
 		String userProfile = request.getParameter("userProfile");
-		
-		System.out.println(userID);
-		System.out.println(userPassword1);
-		System.out.println(userPassword2);
-		System.out.println(userName);
-		System.out.println(userGender);
-		System.out.println(userEmail);
-		System.out.println(request.getParameter("userAge"));
 		
 		// 입력 안 된 값 확인
 		if(userID == null || userID.equals("") || userPassword1 == null || userPassword1.equals("") || 
@@ -56,6 +45,7 @@ public class UserRegisterServlet extends HttpServlet {
 		}
 		int result = new UserDAO().register(userID, userPassword1, userName, userAge, userGender, userEmail, userProfile);
 		if(result == 1) {
+			request.getSession().setAttribute("userID", userID);
 			request.getSession().setAttribute("messageType", "성공 메시지");
 			request.getSession().setAttribute("messageContent", "회원가입에 성공했습니다!");
 			response.sendRedirect("index.jsp");
