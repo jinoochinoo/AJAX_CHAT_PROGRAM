@@ -61,11 +61,11 @@ public class UserDAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String SQL = "select * from userInfo where userID = ?";
+		System.out.println("registerCheck - userID : " + userID);
 		try {
 			conn = dataSource.getConnection();
 			pstmt = conn.prepareStatement(SQL);
 			pstmt.setString(1, userID);
-			System.out.println("registerCheck : " + userID);
 			rs = pstmt.executeQuery();
 			if(rs.next() || userID.equals("")) {
 				return 0; // 이미 등록된 회원

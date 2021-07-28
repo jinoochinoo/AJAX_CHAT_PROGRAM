@@ -47,11 +47,10 @@
 	}
 	
 	function fn_submit(){
-		alert("fn_submit() 실행");
 		var fromID = "<%=userID%>";
 		var toID = "<%=toID%>";
 		var chatContent = $("#chatContent").val();
-		$.ajax({
+		$.ajax({ 
 			type:"post",
 			url: "./chatSubmitServlet",
 			data: {
@@ -130,6 +129,32 @@
 		}, 3000);
 	}
 
+	function getUnread(){
+		$.ajax({
+			type: "post",
+			url: "./chatUnreadServlet",
+			data: {
+				userID: encodeURIComponent('<%= userID %>')				
+			},
+			success: function(result){
+				if(result >= 1){
+					showUnread(result);
+				} else{
+					showUnread('');
+				}
+			}
+		});
+	}
+	
+	function getInfiniteUnread(){
+		setInterval(function(){
+			getUnread();
+		}, 4000);
+	}
+	
+	function showUnread(result){
+		$("#unread").html(result);
+	}	
 </script>
 </head>
 <body>
@@ -146,7 +171,9 @@
 		</div>
 		<div class="collapse navbar-collapse" id="b	s-example-navbar-collapse-1">
 			<ul class="nav navbar-nav">
-				<li class="active"><a href="index.jsp">메인</a>
+				<li><a href="index.jsp">메인</a></li>
+				<li><a href="find.jsp">친구찾기</a></li>
+				<li><a href="box.jsp">메시지함&nbsp;<span id="unread" class="label label-info"></span></a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
 				<li class="dropdown">
@@ -249,8 +276,10 @@
 	%>
 	<script type="text/javascript">
 	$(document).ready(function(){
-		fn_chatList('ten');
+		getUnread();
+		fn_chatList('0');
 		getInfiniteChat();
+		getInfiniteUnread();
 	});	
 	</script>
 </body>

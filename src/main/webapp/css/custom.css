@@ -227,4 +227,102 @@ height:40px;
 
 .text-red {
     color: #e74c3c;
-}     
+}
+
+/* 전체 링크 영역 */
+a {
+	color: #000000;
+	text-decoration: none;
+}
+a:hover {
+	color: #bbbbbb;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+/*네비게이션 영역 */
+/* .navbar-default {
+	background-color: #006DCC;
+	border-color: #006DCC;
+	border-bottom-color: #dddddd;
+	border-bottom-width: 3px;
+	border-radius: 0px;
+}
+
+.navbar-default .navbar-brand{
+	color: #ffffff;
+	padding-top: 25px;
+	font-family: 'Hanna';
+}
+
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus{
+	color: #dddddd;
+	background-color: transparent;
+}
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus{
+	color: #ffffff;
+	background-color: #1456b8;
+}
+*/
+.navbar-default .navbar-nav > li > a{
+	color: white;
+	font-family: 'Noto Sans KR';
+}
+/*
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus{
+	color: #ffffff;
+}
+
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus{
+	color: #ffffff;
+	text-decoration: none;
+	background-color: #006dcc;
+}
+
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus{
+	background-color: #1456B8;
+}
+
+.navbar-default .navbar-toggle .icon-bar{
+	background-color: #dddddd;
+}
+ */
+/* 작은 화면일 때 dropdown */
+/* @media(max-width: 767px){
+	.navbar-default .navbar-nav .open .dropdown-menu > li > a{
+		color: #ffffff;
+	}
+	.navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+	.navbar-default .navbar-nav .open .dropdown-menu > li > a:focus{
+		color: #eeeeee;
+	}
+} */
+
+/* 네비게이션 바 길이 */
+.navbar-fixed top{
+	min-height: 70px;
+}
+.navbar-nav > li > a{
+	padding-top: 0px;
+	padding-bottom: 0px;
+	line-height: 70px;
+}
+
+@media(max-width: 767px){
+	.navbar-default .navbar-brand{
+		padding-top: 15px;
+	}
+	.navbar-nav > li > a {
+		padding-top: 0px;
+		padding-bottom: 0px;
+		line-height: 40px;
+	}
+}

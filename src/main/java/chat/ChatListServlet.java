@@ -39,7 +39,7 @@ public class ChatListServlet extends HttpServlet {
 		StringBuffer result = new StringBuffer("");
 		result.append("{\"result\":[");
 		ChatDAO chatDAO = new ChatDAO();
-		ArrayList<ChatDTO> chatList = chatDAO.getChatListByRecent(fromID, toID, 10);
+		ArrayList<ChatDTO> chatList = chatDAO.getChatListByRecent(fromID, toID, 100);
 		if(chatList.size() == 0) return "";
 		for(int i=0; i<chatList.size(); i++) {
 			result.append("[{\"value\": \"" + chatList.get(i).getFromID() + "\"},");
@@ -51,7 +51,7 @@ public class ChatListServlet extends HttpServlet {
 			}
 		}
 		result.append("], \"last\":\"" + chatList.get(chatList.size()-1).getChatID() + "\"}");
-		System.out.println("ChatListServlet - getTen - chatList.get().getChatID() : " + chatList.get(chatList.size()-1).getChatID());
+		chatDAO.readChat(fromID, toID);
 		return result.toString();
 	}
 	
@@ -71,7 +71,7 @@ public class ChatListServlet extends HttpServlet {
 			}
 		}
 		result.append("], \"last\":\"" + chatList.get(chatList.size()-1).getChatID() + "\"}");
-		System.out.println("ChatListServlet - getID - chatList.get().getChatID() : " + chatList.get(chatList.size()-1).getChatID());
+		chatDAO.readChat(fromID, toID);
 		return result.toString();
 	}	
 	

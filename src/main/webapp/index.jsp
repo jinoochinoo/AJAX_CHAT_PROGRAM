@@ -3,11 +3,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+<%
+	String userID=null;
+	if(session.getAttribute("userID") != null){
+		userID = (String) session.getAttribute("userID");
+	}
+%>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>JSP AJAX 실시간 회원제 채팅 서비스</title>	
       	<!-- jquery -->
-		<script src="//code.jquery.com/jquery.min.js"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <!-- BootStrap -->
 		<!-- 합쳐지고 최소화된 최신 CSS -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
@@ -16,15 +22,37 @@
 		<!-- 커스텀 CSS -->
 		<link rel="stylesheet" href="css/custom.css" type="text/css">
 		<!-- 합쳐지고 최소화된 최신 자바스크립트 -->
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>	
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+	function getUnread(){
+		$.ajax({
+			type: "post",
+			url: "./chatUnreadServlet",
+			data: {
+				userID: encodeURIComponent('<%= userID %>')				
+			},
+			success: function(result){
+				if(result >= 1){
+					showUnread(result);
+				} else{
+					showUnread('');
+				}
+			}
+		});
+	}
+	
+	function getInfiniteUnread(){
+		setInterval(function(){
+			getUnread();
+		}, 4000);
+	}
+	
+	function showUnread(result){
+		$("#unread").html(result);
+	}
+</script>
 </head>
 <body>
-	<%
-		String userID=null;
-		if(session.getAttribute("userID") != null){
-			userID = (String) session.getAttribute("userID");
-		}
-	%>
 	<nav class="navbar navbar-default">
 		<div class="navbar-header">
 			<button type="button" class="navbar-toggle collapsed"
@@ -34,11 +62,13 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 			</button>				
-			<a class="navbar-brand" href="index.jsp">실시</a>
+			<a class="navbar-brand" href="index.jsp">실시간 회원제 채팅서비스</a>
 		</div>
 		<div class="collapse navbar-collapse" id="b	s-example-navbar-collapse-1">
 			<ul class="nav navbar-nav">
-				<li class="active"><a href="index.jsp">메인</a>
+				<li class="active"><a href="index.jsp">메인</a></li>
+				<li><a href="find.jsp">친구찾기</a></li>
+				<li><a href="box.jsp">메시지함&nbsp;<span id="unread" class="label label-info"></span></a></li>
 			</ul>
 			<%
 				if(userID == null){
@@ -123,6 +153,16 @@
 		session.removeAttribute("messageType");
 		}
 	%>
-		
+	<%
+		if(userID != null){
+	%>
+		<script type="text/javascript">
+			$(document).ready(function(){
+				getInfiniteUnread();
+			});
+		</script>
+	<%
+		}
+	%>		
 </body>
 </html>

@@ -7,7 +7,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>JSP AJAX 실시간 회원제 채팅 서비스</title>	
       	<!-- jquery -->
-		<script src="//code.jquery.com/jquery.min.js"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         
         <!-- BootStrap -->
 		<!-- 합쳐지고 최소화된 최신 CSS -->
@@ -76,11 +76,12 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 			</button>				
-			<a class="navbar-brand" href="index.jsp">실시</a>
+			<a class="navbar-brand" href="index.jsp">실시간 회원제 채팅 서비스</a>
 		</div>
 		<div class="collapse navbar-collapse" id="b	s-example-navbar-collapse-1">
 			<ul class="nav navbar-nav">
-				<li class="active"><a href="index.jsp">메인</a>
+				<li class="active"><a href="index.jsp">메인</a></li>
+				<li><a href="find.jsp">친구찾기</a></li>
 			</ul>
 			<%
 				if(userID == null){
