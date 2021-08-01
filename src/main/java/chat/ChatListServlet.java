@@ -9,6 +9,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @WebServlet("/chatListServlet")
 public class ChatListServlet extends HttpServlet {
@@ -20,6 +21,15 @@ public class ChatListServlet extends HttpServlet {
 		String fromID = request.getParameter("fromID");
 		String toID = request.getParameter("toID");
 		String listType = request.getParameter("listType");
+		
+		// session 사용자 일치 체크
+		HttpSession session = request.getSession();
+		if(!fromID.equals((String) session.getAttribute("userID"))){
+			session.setAttribute("messageType", "오류 메시지");
+			session.setAttribute("messageContent", "접근할 수 없습니다!");
+			response.sendRedirect("index.jsp");
+			return;
+		}
 		
 		if(fromID == null || fromID.equals("") || toID == null || toID.equals("") ||
 				listType == null || listType.equals("")) {

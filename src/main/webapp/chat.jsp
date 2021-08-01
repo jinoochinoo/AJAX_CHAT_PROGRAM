@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page import="java.net.URLDecoder" %>
+<%@ page import="user.UserDAO" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,6 +26,16 @@
 			response.sendRedirect("index.jsp");
 			return;
 		}
+		if(userID.equals(URLDecoder.decode(toID, "UTF-8"))){
+			session.setAttribute("messageType", "오류 메시지");
+			session.setAttribute("messageContent", "본인에게 메시지를 보낼 수 없습니다!");
+			response.sendRedirect("index.jsp");
+			return;			
+		}
+		
+		String fromProfile = new UserDAO().getProfile(userID);
+		String toProfile = new UserDAO().getProfile(toID);
+		
 	%>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -85,6 +97,7 @@
 			},
 			success: function(data){
 				if(data == "") return;
+
 				var parsed = JSON.parse(data);
 				var result = parsed.result;
 				for(var i=0; i<result.length; i++){
@@ -99,28 +112,53 @@
 	}
 	
 	function addChat(chatName, chatContent, chatTime){
-		$("#chatList").append('<div class="row">' +
-				'<div class="col-lg-12">' +
-				'<div class=media>' +
-				'<a class="pull-left" href="#">' +
-				'<img class="media-object img-circle" style="width: 30px; height: 30px;" src="images/icon.jpg" alt="">' +
-				'</a>' +
-				'<div class="media-body">' +
-				'<h4 class="media-heading">' +
-				chatName +
-				'<span class="small pull-right">' +
-				chatTime +
-				'</span>' + 
-				'</h4>' +
-				'<p>' +
-				chatContent + 
-				'</p>' +
-				'</div>' + 
-				'</div>' + 
-				'</div>' + 
-				'</div>' + 
-				'<hr>');
-		$("#chatList").scrollTop($("#chatList")[0].scrollHeight);
+		if(chatName == '나'){
+			$("#chatList").append('<div class="row">' +
+					'<div class="col-lg-12">' +
+					'<div class=media>' +
+					'<a class="pull-left" href="#">' +
+					'<img class="media-object img-circle" style="width: 30px; height: 30px;" src="<%= fromProfile %>" alt="">' +
+					'</a>' +
+					'<div class="media-body">' +
+					'<h4 class="media-heading">' +
+					chatName +
+					'<span class="small pull-right">' +
+					chatTime +
+					'</span>' + 
+					'</h4>' +
+					'<p>' +
+					chatContent + 
+					'</p>' +
+					'</div>' + 
+					'</div>' + 
+					'</div>' + 
+					'</div>' + 
+					'<hr>');
+			$("#chatList").scrollTop($("#chatList")[0].scrollHeight);			
+		} else{
+			$("#chatList").append('<div class="row">' +
+					'<div class="col-lg-12">' +
+					'<div class=media>' +
+					'<a class="pull-left" href="#">' +
+					'<img class="media-object img-circle" style="width: 30px; height: 30px;" src="<%= toProfile %>" alt="">' +
+					'</a>' +
+					'<div class="media-body">' +
+					'<h4 class="media-heading">' +
+					chatName +
+					'<span class="small pull-right">' +
+					chatTime +
+					'</span>' + 
+					'</h4>' +
+					'<p>' +
+					chatContent + 
+					'</p>' +
+					'</div>' + 
+					'</div>' + 
+					'</div>' + 
+					'</div>' + 
+					'<hr>');
+			$("#chatList").scrollTop($("#chatList")[0].scrollHeight);			
+		}
 	}
 
 	function getInfiniteChat(){
@@ -182,6 +220,8 @@
 						회원관리<span class="caret"></span>
 					</a>
 					<ul class="dropdown-menu">
+						<li><a href="update.jsp">회원정보수정</a></li>
+						<li><a href="profileUpdate.jsp">프로필 수정</a></li>
 						<li><a href="logoutAction.jsp">로그아웃</a></li>
 					</ul>
 				</li>

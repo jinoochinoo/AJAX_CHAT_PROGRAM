@@ -241,7 +241,7 @@ a:hover {
 }
 
 /*네비게이션 영역 */
-/* .navbar-default {
+.navbar-default {
 	background-color: #006DCC;
 	border-color: #006DCC;
 	border-bottom-color: #dddddd;
@@ -267,9 +267,9 @@ a:hover {
 	color: #ffffff;
 	background-color: #1456b8;
 }
-*/
+
 .navbar-default .navbar-nav > li > a{
-	color: white;
+	/* color: white; */
 	font-family: 'Noto Sans KR';
 }
 /*
@@ -325,4 +325,30 @@ a:hover {
 		padding-bottom: 0px;
 		line-height: 40px;
 	}
+}
+
+/* 파입 업로드 디자인 */
+.btn-file {
+	position: relative;
+	overflow: hidden;
+}
+.btn-file input[type=file] {
+	position: absolute;
+	top: 0;
+	right: 0;
+	min-width: 100%;
+	min-height: 100%;
+	font-size: 100px;
+	text-align: right;
+	filter: alpha(opacity=0);
+	opacity: 0;
+	outline: none;
+	background: white;
+	cursor: inherit;
+	display: block;
+}
+/* 파일 디자인 처리 */
+.file {
+	visibility: hidden;
+	position: absolute;
 }

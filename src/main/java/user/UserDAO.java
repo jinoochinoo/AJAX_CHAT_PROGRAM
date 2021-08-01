@@ -61,7 +61,6 @@ public class UserDAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String SQL = "select * from userInfo where userID = ?";
-		System.out.println("registerCheck - userID : " + userID);
 		try {
 			conn = dataSource.getConnection();
 			pstmt = conn.prepareStatement(SQL);
@@ -90,7 +89,7 @@ public class UserDAO {
 	public int register(String userID, String userPassword, String userName, int userAge, String userGender, String userEmail, String userProfile) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
-		String SQL = "insert into userInfo values (?, ?, ?, ?, ?, ?, ?)";
+		String SQL = "INSERT INTO userInfo VALUES (?, ?, ?, ?, ?, ?, ?)";
 		try {
 			conn = dataSource.getConnection();
 			pstmt = conn.prepareStatement(SQL);
@@ -114,5 +113,130 @@ public class UserDAO {
 		}
 		// 중간에 return 안 됐으면 DB 오류
 		return -1;
+	}
+	
+	public UserDTO getUser(String userID) {
+		UserDTO user = new UserDTO();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String SQL = "select * from userInfo where userID = ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setString(1, userID);
+			rs = pstmt.executeQuery();
+			if(rs.next() || userID.equals("")) {
+				user.setUserID(userID);
+				user.setUserPassword(rs.getString("userPassword"));
+				user.setUserName(rs.getString("userName"));
+				user.setUserAge(rs.getInt("userAge"));
+				user.setUserGender(rs.getString("userGender"));
+				user.setUserEmail(rs.getString("userEmail"));
+				user.setUserProfile(rs.getString("userProfile"));
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return user;
+	}
+	
+	public int update(String userID, String userPassword, String userName, int userAge, String userGender, String userEmail) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String SQL = "UPDATE userInfo "
+				+ "SET userPassword = ?, userName = ?, userAge = ?, userGender = ?, userEmail = ? "
+				+ "WHERE userID = ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setString(1, userPassword);
+			pstmt.setString(2, userName);
+			pstmt.setInt(3, userAge);
+			pstmt.setString(4, userGender);
+			pstmt.setString(5, userEmail);
+			pstmt.setString(6, userID);
+			return  pstmt.executeUpdate();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return -1;
+	}	
+	
+	public int profile(String userID, String userProfile) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String SQL = "UPDATE userInfo "
+				+ "SET userProfile = ? "
+				+ "WHERE userID = ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setString(1, userProfile);
+			pstmt.setString(2, userID);
+			return  pstmt.executeUpdate();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return -1;
+	}
+	
+	public String getProfile(String userID) /* throws NullPointerException */ {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String SQL = "SELECT userProfile "
+				+ "FROM userInfo "
+				+ "WHERE userID = ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setString(1, userID);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+					if(rs.getString("userProfile") == null || rs.getString("userProfile") == "") {
+						return "http://localhost:8090/UserChat/images/icon.jpg";
+					} else {
+						return "http://localhost:8090/UserChat/upload/" + rs.getString("userProfile");
+					}
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 기본 아이콘 return
+		return "http://localhost:8090/UserChat/images/icon.jpg";
 	}	
 }

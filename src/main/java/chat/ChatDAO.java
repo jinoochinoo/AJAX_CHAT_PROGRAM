@@ -160,7 +160,7 @@ public ArrayList<ChatDTO> getBox(String userID){
 			+ "WHERE chatID IN ("
 			+ "SELECT MAX(chatID) "
 			+ "FROM chat "
-			+ "WHERE toID = ? AND fromID = ? "
+			+ "WHERE toID = ? OR fromID = ? "
 			+ "GROUP BY fromID, toID)";
 	
 	try {
@@ -287,6 +287,37 @@ public int getAllUnreadChat(String userID) {
 		conn = dataSource.getConnection();
 		pstmt = conn.prepareStatement(SQL);
 		pstmt.setString(1, userID);
+		rs = pstmt.executeQuery();
+		if(rs.next()) {
+			return rs.getInt("COUNT(chatID)");
+		}
+		return 0;
+	} catch(Exception e) {
+		e.printStackTrace();
+	} finally {
+		try {
+			if(rs != null) rs.close();
+			if(pstmt != null) pstmt.close();
+			if(conn != null) conn.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	 return -1; // DB오류
+	}
+
+public int getUnreadChat(String fromID, String toID) {
+	Connection conn = null;
+	PreparedStatement pstmt = null;
+	ResultSet rs = null;
+	String SQL = "SELECT COUNT(chatID) "
+			+ "FROM chat "
+			+ "WHERE fromID = ? AND toID = ? AND chatRead = 0";
+	try {
+		conn = dataSource.getConnection();
+		pstmt = conn.prepareStatement(SQL);
+		pstmt.setString(1, fromID);
+		pstmt.setString(2, toID);
 		rs = pstmt.executeQuery();
 		if(rs.next()) {
 			return rs.getInt("COUNT(chatID)");
