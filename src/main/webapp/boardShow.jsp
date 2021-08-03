@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page import="board.BoardDAO" %>
+<%@ page import="board.BoardDTO" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,13 +10,19 @@
 	if(session.getAttribute("userID") != null){
 		userID = (String) session.getAttribute("userID");
 	}
-	
 	if(userID == null){
 		session.setAttribute("messageType", "오류 메시지");
 		session.setAttribute("messageContent", "로그인부터 하세요!");
 		response.sendRedirect("index.jsp");
 		return;
 	}
+	String boardID = null;
+	if(request.getParameter("boardID") != null){
+		boardID = (String) request.getParameter("boardID");
+	}
+	BoardDAO boardDAO = new BoardDAO();
+	BoardDTO board = boardDAO.getBoard(boardID);
+	boardDAO.hit(boardID);
 %>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -31,7 +39,6 @@
 		<!-- 합쳐지고 최소화된 최신 자바스크립트 -->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 <script type="text/javascript">
-
 	function getUnread(){
 		$.ajax({
 			type: "post",
@@ -55,62 +62,9 @@
 		}, 4000);
 	}
 	
-	function fn_chatBox(){
-		var userID = '<%= userID %>';
-		$.ajax({
-			type: "post",
-			url: "./chatBox",
-			data: {
-				userID: encodeURIComponent(userID)
-			},
-			success: function(data){
-				if(data == '') return;
-				$("#boxTable").html('');
-				var parsed = JSON.parse(data);
-				var result = parsed.result;
-				for(var i=0; i<result.length; i++){
-					if(result[i][0].value == userID){
-						result[i][0].value = result[i][1].value;
-					} else{
-						result[i][1].value = result[i][0].value;
-					}
-					addBox(result[i][0].value, result[i][1].value, result[i][2].value, result[i][3].value, result[i][4].value, result[i][5].value);
-				}
-			}			
-		});
-	}
-	
-	function addBox(lastID, toID, chatContent, chatTime, profile, unread){
-		$("#boxTable").append(
-		'<tr onclick="location.href=\'chat.jsp?toID=' + encodeURIComponent(toID) + '\'">' +
-			'<td style="width: 150px;">' + 
-			'<img class="media-object img-circle" style="margin: 0 auto; max-width: 40px; max-height: 40px;" src="' + profile + '">' + 
-				'<h5>' + lastID + '</h5>' + 
-			'</td>' + 
-			'<td>' + 
-				'<h5>' + chatContent +
-				'<span class="label label-info pull-right">' + unread + '</span>' + '</h5>' + 
-				'<div class="pull-right">' + chatTime + '</div>' +
-			'</td>' +
-		'</tr>');	
-	}
-	
-	function getInfiniteBox(){
-		setInterval(function(){
-			fn_chatBox();
-		}, 3000);
-	}
-	
 	function showUnread(result){
 		$("#unread").html(result);
 	}
-	
-	$(document).ready(function(){
-		getUnread();
-		getInfiniteUnread();
-		fn_chatBox();
-		getInfiniteBox();
-	});	
 </script>
 </head>
 <body>
@@ -127,11 +81,29 @@
 		</div>
 		<div class="collapse navbar-collapse" id="b	s-example-navbar-collapse-1">
 			<ul class="nav navbar-nav">
-				<li><a href="index.jsp">메인</a></li>
+				<li class="active"><a href="index.jsp">메인</a></li>
 				<li><a href="find.jsp">친구찾기</a></li>
-				<li class="active"><a href="box.jsp">메시지함&nbsp;<span id="unread" class="label label-info"></span></a></li>
-				<li><a href="boardView.jsp">자유게시판</a></li>
+				<li><a href="box.jsp">메시지함&nbsp;<span id="unread" class="label label-info"></span></a></li>
+				<li class="active"><a href="boardView.jsp">자유게시판</a></li>
 			</ul>
+			<%
+				if(userID == null){
+			%>
+			<ul class="nav navbar-nav navbar-right">
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown"
+						role="button" aria-haspopup="true" aria-expanded="false">
+						접속하기<span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="login.jsp">로그인</a></li>
+						<li><a href="join.jsp">회원가입</a></li>
+					</ul>
+				</li>
+			</ul>
+			<% 
+				} else{
+			%>
 			<ul class="nav navbar-nav navbar-right">
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"
@@ -145,24 +117,52 @@
 					</ul>
 				</li>
 			</ul>			
+			<%	
+				}
+			%>
 		</div>
 	</nav>
+
 	<div class="container">
-		<table class="table" style="margin: 0 auto;">
+		<table class="table table-boardered table-hover" style="text-align: center; border: 1px solid #ddddd">
 			<thead>
 				<tr>
-					<th><h4>메시지 목록</h4></th>
+					<th colspan="5"><h4>게시글 보기</h4></th>
+				</tr>
+				<tr>
+					<td style="background-color: #fafafa; color: #000000; width: 80px;"><h5>제목</h5></td>
+					<td colspan="3"><h5><%= board.getBoardTitle() %></h5></td>
+				</tr>
+				<tr>
+					<td style="background-color: #fafafa; color: #000000; width: 80px;"><h5>작성자</h5></td>
+					<td colspan="3"><h5><%= board.getUserID() %></h5></td>
+				</tr>
+				<tr>
+					<td style="background-color: #fafafa; color: #000000; width: 80px;"><h5>작성날짜</h5></td>
+					<td><h5><%= board.getBoardDate() %></h5></td>
+					<td style="background-color: #fafafa; color: #000000; width: 80px;"><h5>조회수</h5></td>
+					<td><h5><%= board.getBoardHit() %></h5></td>					
+				</tr>
+				<tr>
+					<td style="vertical-align: middle; min-height: 150px; background-color: #fafafa; color: #000000; width: 80px;"><h5>내용</h5></td>
+					<td colspan="3" style="text-align: left;"><h5><%= board.getBoardContent() %></h5></td>
+				</tr>
+				<tr>
+					<td style="background-color: #fafafa; color: #000000; width: 80px;"><h5>첨부파일</h5></td>
+					<td colspan="3"><h5><%= board.getUserID() %></h5></td>
 				</tr>
 			</thead>
-			<div style="overflow-y: auto; width: 100%; max-height: 450px;">
-				<table class="table table-bordered table-hover" style="text-align: center; border: 1px solid #dddddd; margin: 0 auto;">
-					<tbody id="boxTable">
-					</tbody>
-				</table>
-			</div>
-		</table>	
+			<tbody>
+				<tr>
+					<th colspan="5"><h4>게시물 보기</h4></th>
+				</tr>
+
+				<tr>
+					<td colspan="5"><a href="boardWrite.jsp" class="btn btn-primary pull-right" type="submit">글쓰기</a></td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
-	
 	<%
 		String messageContent = null;
 		if(session.getAttribute("messageContent") != null){
@@ -179,6 +179,7 @@
 	<div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-hidden="true">
 		<div class="vertical-alignment-helper">
 			<div class="modal-dialog vertical-align-center">
+
 				<div class="modal-content <% if(messageType.equals("오류 메시지")) out.println("panel-warning"); else out.println("panel-success"); %>">
 					<div class="modal-header panel-heading">
 						<button type="button" class="close" data-dismiss="modal">
@@ -210,8 +211,16 @@
 		session.removeAttribute("messageType");
 		}
 	%>
+	<%
+		if(userID != null){
+	%>
 		<script type="text/javascript">
-
-		</script>	
+			$(document).ready(function(){
+				getInfiniteUnread();
+			});
+		</script>
+	<%
+		}
+	%>		
 </body>
 </html>

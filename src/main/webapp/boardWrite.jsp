@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page import="user.UserDTO" %>
+<%@ page import="user.UserDAO" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,13 +10,13 @@
 	if(session.getAttribute("userID") != null){
 		userID = (String) session.getAttribute("userID");
 	}
-	
 	if(userID == null){
 		session.setAttribute("messageType", "오류 메시지");
-		session.setAttribute("messageContent", "로그인부터 하세요!");
+		session.setAttribute("messageContent", "로그인 먼저 하세요!");
 		response.sendRedirect("index.jsp");
 		return;
 	}
+	UserDTO user = new UserDAO().getUser(userID);
 %>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -31,7 +33,6 @@
 		<!-- 합쳐지고 최소화된 최신 자바스크립트 -->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 <script type="text/javascript">
-
 	function getUnread(){
 		$.ajax({
 			type: "post",
@@ -55,62 +56,19 @@
 		}, 4000);
 	}
 	
-	function fn_chatBox(){
-		var userID = '<%= userID %>';
-		$.ajax({
-			type: "post",
-			url: "./chatBox",
-			data: {
-				userID: encodeURIComponent(userID)
-			},
-			success: function(data){
-				if(data == '') return;
-				$("#boxTable").html('');
-				var parsed = JSON.parse(data);
-				var result = parsed.result;
-				for(var i=0; i<result.length; i++){
-					if(result[i][0].value == userID){
-						result[i][0].value = result[i][1].value;
-					} else{
-						result[i][1].value = result[i][0].value;
-					}
-					addBox(result[i][0].value, result[i][1].value, result[i][2].value, result[i][3].value, result[i][4].value, result[i][5].value);
-				}
-			}			
-		});
-	}
-	
-	function addBox(lastID, toID, chatContent, chatTime, profile, unread){
-		$("#boxTable").append(
-		'<tr onclick="location.href=\'chat.jsp?toID=' + encodeURIComponent(toID) + '\'">' +
-			'<td style="width: 150px;">' + 
-			'<img class="media-object img-circle" style="margin: 0 auto; max-width: 40px; max-height: 40px;" src="' + profile + '">' + 
-				'<h5>' + lastID + '</h5>' + 
-			'</td>' + 
-			'<td>' + 
-				'<h5>' + chatContent +
-				'<span class="label label-info pull-right">' + unread + '</span>' + '</h5>' + 
-				'<div class="pull-right">' + chatTime + '</div>' +
-			'</td>' +
-		'</tr>');	
-	}
-	
-	function getInfiniteBox(){
-		setInterval(function(){
-			fn_chatBox();
-		}, 3000);
-	}
-	
 	function showUnread(result){
 		$("#unread").html(result);
 	}
 	
-	$(document).ready(function(){
-		getUnread();
-		getInfiniteUnread();
-		fn_chatBox();
-		getInfiniteBox();
-	});	
+	function fn_passwordCheck(){
+		var userPassword1 = $("#userPassword1").val();
+		var userPassword2 = $("#userPassword2").val();
+		if(userPassword1 != userPassword2){
+			$("#passwordCheckMessage").html("비밀번호가 서로 다릅니다!");
+		} else{
+			$("#passwordCheckMessage").html("");
+		}
+	}	
 </script>
 </head>
 <body>
@@ -129,7 +87,7 @@
 			<ul class="nav navbar-nav">
 				<li><a href="index.jsp">메인</a></li>
 				<li><a href="find.jsp">친구찾기</a></li>
-				<li class="active"><a href="box.jsp">메시지함&nbsp;<span id="unread" class="label label-info"></span></a></li>
+				<li><a href="box.jsp">메시지함&nbsp;<span id="unread" class="label label-info"></span></a></li>
 				<li><a href="boardView.jsp">자유게시판</a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
@@ -140,7 +98,7 @@
 					</a>
 					<ul class="dropdown-menu">
 						<li><a href="update.jsp">회원정보수정</a></li>
-						<li><a href="profileUpdate.jsp">프로필 수정</a></li>
+						<li class="active"><a href="profileUpdate.jsp">프로필 수정</a></li>
 						<li><a href="logoutAction.jsp">로그아웃</a></li>
 					</ul>
 				</li>
@@ -148,21 +106,47 @@
 		</div>
 	</nav>
 	<div class="container">
-		<table class="table" style="margin: 0 auto;">
-			<thead>
-				<tr>
-					<th><h4>메시지 목록</h4></th>
-				</tr>
-			</thead>
-			<div style="overflow-y: auto; width: 100%; max-height: 450px;">
-				<table class="table table-bordered table-hover" style="text-align: center; border: 1px solid #dddddd; margin: 0 auto;">
-					<tbody id="boxTable">
-					</tbody>
-				</table>
-			</div>
-		</table>	
+		<form method="post" action="./boardWrite" enctype="multipart/form-data">
+			<table class="table table-bordered table-hover" style="text-align; center; border: 1px solid #dddddd">
+				<thead>
+					<tr>
+						<th colspan="2" style="text-align: center;"><h4>게시물 작성 양식</h4></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td style="width: 120px; text-align: center;"><h5>아이디</h5></td>
+						<td><h5><%= user.getUserID() %></h5>
+						<input type="hidden" name="userID" value="<%= user.getUserID() %>"></td>
+					</tr>
+					<tr>
+						<td style="width: 120px; text-align: center;"><h5>글 제목</h5></td>
+						<td><input class="form-control" type="text" maxlength="50" name="boardTitle" placeholder="글 제목을 입력하세요."></td>
+					</tr>					
+					<tr>
+						<td style="width: 120px; text-align: center;"><h5>내용</h5></td>
+						<td><textarea class="form-control" rows="10" name="boardContent" maxlength="2048" placeholder="글 내용을 입력하세요."></textarea></td>
+					</tr>					
+					<tr>
+						<td style="width: 110px; text-align: center;"><h5>파일 업로드</h5></td>
+						<td colspan="2">
+							<input class="file" type="file" name="boardFile">
+							<div class="input-group col-xs-12">
+								<span class="input-group-addon"><i class="glyphicon glyphicon-picture"></i></span>
+								<input type="text" class="form-control input-lg" disabled placeholder="파일을 업로드하세요.">
+								<span class="input-group-btn">
+									<button class="browse btn btn-primary input-lg" type="button"><i class="glyphicon glyphicon-search">파일 찾기</i></button>
+								</span>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td style="text-align: left;" colspan="3"><input class="btn btn-primary pull-right" type="submit" value="게시글 등록">
+					</tr>
+				</tbody>
+			</table>			
+		</form>
 	</div>
-	
 	<%
 		String messageContent = null;
 		if(session.getAttribute("messageContent") != null){
@@ -179,6 +163,7 @@
 	<div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-hidden="true">
 		<div class="vertical-alignment-helper">
 			<div class="modal-dialog vertical-align-center">
+
 				<div class="modal-content <% if(messageType.equals("오류 메시지")) out.println("panel-warning"); else out.println("panel-success"); %>">
 					<div class="modal-header panel-heading">
 						<button type="button" class="close" data-dismiss="modal">
@@ -210,8 +195,26 @@
 		session.removeAttribute("messageType");
 		}
 	%>
+	<%
+		if(userID != null){
+	%>
 		<script type="text/javascript">
-
-		</script>	
+			$(document).ready(function(){
+				getInfiniteUnread();
+			});
+		</script>
+	<%
+		}
+	%>
+	<script type="text/javascript">
+		$(document).on('click', '.browse', function(){
+			var file = $(this).parent().parent().parent().find('.file');
+			file.trigger('click');
+		});
+		
+		$(document).on('change', '.file', function(){
+			$(this).parent().find('.form-control').val($(this).val().replace(/C:\\fakepath\\/i, ''));
+		});
+	</script>	
 </body>
 </html>
