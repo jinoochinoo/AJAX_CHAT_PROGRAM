@@ -65,6 +65,7 @@
 	function showUnread(result){
 		$("#unread").html(result);
 	}
+	
 </script>
 </head>
 <body>
@@ -86,24 +87,6 @@
 				<li><a href="box.jsp">메시지함&nbsp;<span id="unread" class="label label-info"></span></a></li>
 				<li class="active"><a href="boardView.jsp">자유게시판</a></li>
 			</ul>
-			<%
-				if(userID == null){
-			%>
-			<ul class="nav navbar-nav navbar-right">
-				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown"
-						role="button" aria-haspopup="true" aria-expanded="false">
-						접속하기<span class="caret"></span>
-					</a>
-					<ul class="dropdown-menu">
-						<li><a href="login.jsp">로그인</a></li>
-						<li><a href="join.jsp">회원가입</a></li>
-					</ul>
-				</li>
-			</ul>
-			<% 
-				} else{
-			%>
 			<ul class="nav navbar-nav navbar-right">
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"
@@ -117,9 +100,6 @@
 					</ul>
 				</li>
 			</ul>			
-			<%	
-				}
-			%>
 		</div>
 	</nav>
 
@@ -149,17 +129,27 @@
 				</tr>
 				<tr>
 					<td style="background-color: #fafafa; color: #000000; width: 80px;"><h5>첨부파일</h5></td>
-					<td colspan="3"><h5><%= board.getUserID() %></h5></td>
+					<td colspan="3"><h5><a href="boardDownload.jsp?boardID=<%= board.getBoardID() %>"><%= board.getBoardFile() %></a></h5></td>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<th colspan="5"><h4>게시물 보기</h4></th>
+					<td colspan="5" style="text-align: right;">
+						<a href="boardUpdate.jsp?boardID=<%= board.getBoardID() %>" class="btn btn-primary">수정</a>
+						<a href="boardView.jsp" class="btn btn-primary">목록</a>
+						<a href="boardReply.jsp?boardID=<%= board.getBoardID() %>" class="btn btn-primary">답변</a>
+						<%
+							if(userID.equals(board.getUserID())){
+						%>
+							<a href="boardDelete?boardID=<%= board.getBoardID() %>" class="btn btn-primary" onclick="return confirm('정말로 삭제하시겠습니까?')" >삭제</a>
+						<%		
+							}
+						%>
+					</td>
 				</tr>
-
-				<tr>
+<!-- 				<tr>
 					<td colspan="5"><a href="boardWrite.jsp" class="btn btn-primary pull-right" type="submit">글쓰기</a></td>
-				</tr>
+				</tr> -->
 			</tbody>
 		</table>
 	</div>

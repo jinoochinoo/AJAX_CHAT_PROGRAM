@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 public class BoardDAO {
 
 	DataSource dataSource;
+	public BoardDTO board;
 	
 	public BoardDAO(){
 		try {
@@ -66,7 +67,7 @@ public class BoardDAO {
 				board.setBoardID(rs.getInt("boardID"));
 				board.setBoardTitle(rs.getString("boardTitle"));
 				board.setBoardContent(rs.getString("boardContent"));
-				board.setBoardDate(rs.getString("boardData").substring(0, 11));
+				board.setBoardDate(rs.getString("boardDate").substring(0, 11));
 				board.setBoardHit(rs.getInt("boardHit"));
 				board.setBoardFile(rs.getString("boardFile"));
 				board.setBoardRealFile(rs.getString("boardRealFile"));
@@ -151,5 +152,116 @@ public class BoardDAO {
 		}
 		// 중간에 return 안 됐으면 DB 오류
 		return -1;
-	}		
+	}
+	
+	public String getFile(String boardID) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String SQL = "SELECT boardFile FROM board WHERE boardID = ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setString(1, boardID);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				return rs.getString("boardFile");
+			}
+			return "";
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return "";		
+	}
+	
+	public String getRealFile(String boardID) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String SQL = "SELECT boardRealFile FROM board WHERE boardID = ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setString(1, boardID);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				return rs.getString("boardRealFile");
+			}
+			return "";
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return "";		
+	}
+	
+	public int update(String boardTitle, String boardContent, String boardFile, String boardRealFile, String boardID) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String SQL = "UPDATE board "
+				+ "SET boardTitle = ?, boardContent = ?, boardFile = ?, boardRealFile = ? "
+				+ "WHERE boardID = ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setString(1, boardTitle);
+			pstmt.setString(2, boardContent);
+			pstmt.setString(3, boardFile);
+			pstmt.setString(4, boardRealFile);
+			pstmt.setInt(5, Integer.parseInt(boardID));
+			return  pstmt.executeUpdate();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return -1;
+	}
+	
+	public int delete(String boardID) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String SQL = "DELETE FROM board "
+				+ "WHERE boardID = ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setInt(1, Integer.parseInt(boardID));
+			return  pstmt.executeUpdate();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return -1;
+	}	
 }
