@@ -27,7 +27,7 @@ public class BoardDAO {
 	public int write(String userID, String boardTitle, String boardContent, String boardFile, String boardRealFile) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
-		String SQL = "INSERT INTO board VALUES (?, seq_boardID.NEXTVAL, ?, ?, sysdate, 0, ?, ?, seq_boardGroup.NEXTVAL, 0, 0)";
+		String SQL = "INSERT INTO board VALUES (?, seq_boardID.NEXTVAL, ?, ?, sysdate, 0, ?, ?, seq_boardGroup.NEXTVAL, 0, 0, 1)";
 		try {
 			conn = dataSource.getConnection();
 			pstmt = conn.prepareStatement(SQL);
@@ -74,6 +74,7 @@ public class BoardDAO {
 				board.setBoardGroup(rs.getInt("boardGroup"));
 				board.setBoardSequence(rs.getInt("boardSequence"));
 				board.setBoardLevel(rs.getInt("boardLevel"));
+				board.setBoardAvailable(rs.getInt("boardAvailable"));
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -90,15 +91,24 @@ public class BoardDAO {
 		return board;
 	}
 	
-	public ArrayList<BoardDTO> getList() {
+	public ArrayList<BoardDTO> getList(String pageNumber) {
 		ArrayList<BoardDTO> boardList = null;
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		String SQL = "SELECT * FROM board ORDER BY boardGroup DESC, boardSequence ASC";
+		String SQL = "SELECT * "
+				+ "FROM board "
+				+ "WHERE boardGroup > ("
+				+ "SELECT MAX(boardGroup) "
+				+ "FROM board) - ? AND boardGroup <= ("
+				+ "SELECT MAX(boardGroup) "
+				+ "FROM board) - ? "
+				+ "ORDER BY boardGroup DESC, boardSequence ASC";
 		try {
 			conn = dataSource.getConnection();
 			pstmt = conn.prepareStatement(SQL);
+			pstmt.setInt(1, Integer.parseInt(pageNumber) * 10);
+			pstmt.setInt(2, (Integer.parseInt(pageNumber) - 1) * 10);
 			rs = pstmt.executeQuery();
 			boardList = new ArrayList<BoardDTO>();
 			while(rs.next()) {
@@ -114,6 +124,7 @@ public class BoardDAO {
 				board.setBoardGroup(rs.getInt("boardGroup"));
 				board.setBoardSequence(rs.getInt("boardSequence"));
 				board.setBoardLevel(rs.getInt("boardLevel"));
+				board.setBoardAvailable(rs.getInt("boardAvailable"));
 				boardList.add(board);
 			}
 		} catch(Exception e) {
@@ -134,7 +145,9 @@ public class BoardDAO {
 	public int hit(String BoardID) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
-		String SQL = "UPDATE board SET boardHit = boardHit + 1 WHERE boardID = ?";
+		String SQL = "UPDATE board "
+				+ "SET boardHit = boardHit + 1 "
+				+ "WHERE boardID = ?";
 		try {
 			conn = dataSource.getConnection();
 			pstmt = conn.prepareStatement(SQL);
@@ -158,7 +171,9 @@ public class BoardDAO {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		String SQL = "SELECT boardFile FROM board WHERE boardID = ?";
+		String SQL = "SELECT boardFile "
+				+ "FROM board "
+				+ "WHERE boardID = ?";
 		try {
 			conn = dataSource.getConnection();
 			pstmt = conn.prepareStatement(SQL);
@@ -244,7 +259,8 @@ public class BoardDAO {
 	public int delete(String boardID) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
-		String SQL = "DELETE FROM board "
+		String SQL = "UPDATE board "
+				+ "SET boardAvailable = 0 "
 				+ "WHERE boardID = ?";
 		try {
 			conn = dataSource.getConnection();
@@ -263,5 +279,124 @@ public class BoardDAO {
 		}
 		// 중간에 return 안 됐으면 DB 오류
 		return -1;
+	}
+	
+	public int reply(String userID, String boardTitle, String boardContent, String boardFile, String boardRealFile, BoardDTO parent) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String SQL = "INSERT INTO board "
+				+ "VALUES (?, seq_boardID.NEXTVAL, ?, ?, sysdate, 0, ?, ?, ?, ?, ?, 1)";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setString(1, userID);
+			pstmt.setString(2, boardTitle);
+			pstmt.setString(3, boardContent);
+			pstmt.setString(4, boardFile);
+			pstmt.setString(5, boardRealFile);
+			pstmt.setInt(6, parent.getBoardGroup());
+			pstmt.setInt(7, parent.getBoardSequence() + 1);
+			pstmt.setInt(8, parent.getBoardLevel() + 1);
+			return  pstmt.executeUpdate();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return -1;
+	}		
+
+	public int replyUpdate(BoardDTO parent) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String SQL = "UPDATE board "
+				+ "SET boardSequence = boardSequence + 1 "
+				+ "WHERE boardGroup = ? AND boardSequence > ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setInt(1, parent.getBoardGroup());
+			pstmt.setInt(2, parent.getBoardSequence());
+			return  pstmt.executeUpdate();
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return -1;
+	}
+	
+	public Boolean nextPage(String pageNumber) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String SQL = "SELECT * "
+				+ "FROM board "
+				+ "WHERE boardGroup >= ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setInt(1, Integer.parseInt(pageNumber) * 10);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				return true;
+			}
+			return false;
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return false;		
 	}	
+	
+	public int targetPage(String pageNumber) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String SQL = "SELECT COUNT(boardGroup) "
+				+ "FROM board "
+				+ "WHERE boardGroup > ?";
+		try {
+			conn = dataSource.getConnection();
+			pstmt = conn.prepareStatement(SQL);
+			pstmt.setInt(1, (Integer.parseInt(pageNumber)-1) * 10);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt(1) / 10;
+			}
+			return 0;
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		// 중간에 return 안 됐으면 DB 오류
+		return 0;		
+	}		
 }

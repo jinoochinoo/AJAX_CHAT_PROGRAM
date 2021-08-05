@@ -20,8 +20,21 @@
 	if(request.getParameter("boardID") != null){
 		boardID = (String) request.getParameter("boardID");
 	}
+	if(boardID == null || boardID.equals("")){
+		session.setAttribute("messageType", "오류 메시지");
+		session.setAttribute("messageContent", "게시물부터 선택하세요!");
+		response.sendRedirect("index.jsp");
+		return;
+	}
+	
 	BoardDAO boardDAO = new BoardDAO();
 	BoardDTO board = boardDAO.getBoard(boardID);
+	if(board.getBoardAvailable() == 0){
+		session.setAttribute("messageType", "오류 메시지");
+		session.setAttribute("messageContent", "삭제된 게시글입니다!");
+		response.sendRedirect("boardView.jsp");
+		return;
+	}
 	boardDAO.hit(boardID);
 %>
 	<meta charset="UTF-8">
@@ -121,7 +134,7 @@
 					<td style="background-color: #fafafa; color: #000000; width: 80px;"><h5>작성날짜</h5></td>
 					<td><h5><%= board.getBoardDate() %></h5></td>
 					<td style="background-color: #fafafa; color: #000000; width: 80px;"><h5>조회수</h5></td>
-					<td><h5><%= board.getBoardHit() %></h5></td>					
+					<td><h5><%= board.getBoardHit() + 1 %></h5></td>					
 				</tr>
 				<tr>
 					<td style="vertical-align: middle; min-height: 150px; background-color: #fafafa; color: #000000; width: 80px;"><h5>내용</h5></td>

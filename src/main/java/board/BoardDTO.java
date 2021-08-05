@@ -12,7 +12,14 @@ public class BoardDTO {
 		String boardRealFile;
 		int boardGroup;
 		int boardSequence;
+		int boardAvailable;
 		
+		public int getBoardAvailable() {
+			return boardAvailable;
+		}
+		public void setBoardAvailable(int boardAvailable) {
+			this.boardAvailable = boardAvailable;
+		}
 		int boardLevel;
 		public String getUserID() {
 			return userID;
